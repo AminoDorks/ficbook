@@ -1,0 +1,34 @@
+{
+  "name": "ficbook",
+  "module": "index.ts",
+  "version": "1.0.0 ",
+  "type": "module",
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ficbook"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "test": "bun src/test.ts"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AminoDorks/ficbook"
+  },
+  "bugs": {
+    "url": "https://github.com/AminoDorks/ficbook/issues"
+  },
+  "homepage": "https://github.com/AminoDorks/ficbook#readme",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
