@@ -41,12 +41,10 @@ export class Http {
 
     const cookieHeaders = headers.getSetCookie();
     if (cookieHeaders?.length) {
-      for (let i = 0; i < cookieHeaders.length; i++) {
-        const cookie = new Cookie(cookieHeaders[i]!);
-        if (cookie.name) {
-          this.cookies.set(cookie.name, cookie.value);
-        }
-      }
+      cookieHeaders.forEach((cookieHeader) => {
+        const cookie = new Cookie(cookieHeader);
+        if (cookie.name) this.cookies.set(cookie.name, cookie.value);
+      });
 
       this.external['Cookie'] = mapToString(this.cookies);
     }
