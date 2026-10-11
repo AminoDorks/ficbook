@@ -1,17 +1,12 @@
-import { Cookie } from 'bun';
 import { LETTERS } from '../constants';
-
-export const extractCookie = (cookieHeaders: string[]) =>
-  cookieHeaders
-    .map((cookieHeader) => {
-      const cookie = new Cookie(cookieHeader);
-      return `${cookie.name}=${cookie.value}`;
-    })
-    .filter(Boolean)
-    .join('; ');
 
 export const generateBoundary = () =>
   Array.from(
     { length: 16 },
     () => LETTERS[Math.floor(Math.random() * 62)],
   ).join('');
+
+export const mapToString = (cookies: Map<string, string>): string =>
+  Array.from(cookies.entries())
+    .map(([name, value]) => `${name}=${value}`)
+    .join('; ');

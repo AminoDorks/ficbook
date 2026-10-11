@@ -4,12 +4,13 @@ import type { Logger } from 'pino';
 import type { ZodType } from 'zod';
 
 import { FicbookError } from '../util/errors';
-import { extractCookie, generateBoundary } from '../util/helpers';
+import { generateBoundary, mapToString } from '../util/helpers';
 import { BASE_URL, CHROMIUM_HEADERS, MOBILE_HEADERS } from '../constants';
-import type { Headers } from '../types/http';
-import type { MobileBuilder, MultipartBuilder } from '../types/http';
+import type { Headers, MobileBuilder, MultipartBuilder } from '../types/http';
+import { Cookie } from 'bun';
 
 export class Http {
+  private cookies: Map<string, string> = new Map<string, string>();
   private external: Headers = {};
 
   private logger: Logger;
@@ -39,8 +40,16 @@ export class Http {
     }
 
     const cookieHeaders = headers.getSetCookie();
+    if (cookieHeaders?.length) {
+      for (let i = 0; i < cookieHeaders.length; i++) {
+        const cookie = new Cookie(cookieHeaders[i]!);
+        if (cookie.name) {
+          this.cookies.set(cookie.name, cookie.value);
+        }
+      }
 
-    if (cookieHeaders) this.external['Cookie'] = extractCookie(cookieHeaders);
+      this.external['Cookie'] = mapToString(this.cookies);
+    }
 
     return schema.parse(camelize(JSON.parse(await text()), { deep: true }));
   };
