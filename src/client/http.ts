@@ -1,13 +1,20 @@
 import camelize from 'camelcase-keys';
 import { fetch } from 'netbun';
+import { Cookie } from 'bun';
 import type { Logger } from 'pino';
 import type { ZodType } from 'zod';
 
 import { FicbookError } from '../util/errors';
 import { generateBoundary, mapToString } from '../util/helpers';
 import { BASE_URL, CHROMIUM_HEADERS, MOBILE_HEADERS } from '../constants';
-import type { Headers, MobileBuilder, MultipartBuilder } from '../types/http';
-import { Cookie } from 'bun';
+import type {
+  GetBuilder,
+  HandleBuilder,
+  Headers,
+  PostBuilder,
+  MapBuilder,
+} from '../types/http';
+import type { Credentials, PartialCredentials } from '../types/ficbook';
 
 export class Http {
   private cookies: Map<string, string> = new Map<string, string>();
@@ -29,50 +36,88 @@ export class Http {
     this.logger.info({ proxy }, 'proxy set');
   }
 
+  get credentials(): PartialCredentials {
+    return {
+      rme: this.cookies.get('rme'),
+      phpSessionId: this.cookies.get('PHPSESSID'),
+    };
+  }
+
+  set cookie({ rme, phpSessionId }: Credentials) {
+    this.cookies.set('rme', rme);
+    this.cookies.set('PHPSESSID', phpSessionId);
+    this.external['Cookie'] = mapToString(this.cookies);
+  }
+
   private handle = async <T>(
-    path: string,
-    { status, statusText, text, headers }: Response,
+    { path, response, html }: HandleBuilder,
     schema: ZodType<T>,
   ): Promise<T> => {
-    if (status != 200) {
-      this.logger.error({ path }, statusText);
-      throw new FicbookError(statusText);
+    if (response.status != 200) {
+      this.logger.error({ path }, response.statusText);
+      throw new FicbookError(response.statusText);
     }
 
-    const cookieHeaders = headers.getSetCookie();
+    const cookieHeaders = response.headers.getSetCookie();
     if (cookieHeaders?.length) {
       cookieHeaders.forEach((cookieHeader) => {
         const cookie = new Cookie(cookieHeader);
         if (cookie.name) this.cookies.set(cookie.name, cookie.value);
       });
-
-      this.external['Cookie'] = mapToString(this.cookies);
     }
 
-    return schema.parse(camelize(JSON.parse(await text()), { deep: true }));
+    this.logger.info({ path }, response.statusText);
+
+    return schema.parse(
+      html
+        ? await response.text()
+        : camelize(JSON.parse(await response.text()), { deep: true }),
+    );
   };
+
+  public get = async <T>(
+    { path, html }: GetBuilder,
+    schema: ZodType<T>,
+  ): Promise<T> =>
+    await this.handle(
+      {
+        path,
+        response: await fetch(`${BASE_URL}${path}`, {
+          method: 'GET',
+          headers: {
+            ...CHROMIUM_HEADERS,
+            ...this.external,
+          },
+        }),
+        html,
+      },
+      schema,
+    );
 
   public mobile = async <T>(
-    { path, body }: MobileBuilder,
+    { path, body }: PostBuilder,
     schema: ZodType<T>,
-  ) => {
-    const response = await fetch(`${BASE_URL}/api_mobile${path}`, {
-      method: 'POST',
-      body,
-      headers: {
-        ...MOBILE_HEADERS,
-        ...this.external,
+  ): Promise<T> =>
+    await this.handle(
+      {
+        path,
+        response: await fetch(`${BASE_URL}/api_mobile${path}`, {
+          method: 'POST',
+          body,
+          headers: {
+            ...MOBILE_HEADERS,
+            ...this.external,
+          },
+          proxy: this.proxy,
+        }),
       },
-      proxy: this.proxy,
-    });
-
-    return await this.handle(path, response, schema);
-  };
+      schema,
+    );
 
   public multipart = async <T>(
-    { path, body }: MultipartBuilder,
+    { path, body }: MapBuilder,
     schema: ZodType<T>,
-  ) => {
+  ): Promise<T> => {
     const boundary = `----WebKitFormBoundary${generateBoundary()}`;
     const parts: Buffer[] = [];
 
@@ -96,20 +141,29 @@ export class Http {
       proxy: this.proxy,
     });
 
-    return await this.handle(path, response, schema);
+    return await this.handle({ path, response }, schema);
   };
 
-  public urlencoded = async <T>(path: string, schema: ZodType) => {
-    const response = await fetch(`${BASE_URL}${path}`, {
-      method: 'POST',
-      headers: {
-        ...CHROMIUM_HEADERS,
-        ...this.external,
-        'Content-Type': `application/x-www-form-urlencoded;charset=UTF-8`,
+  public urlencoded = async <T>(
+    { path, body }: MapBuilder,
+    schema: ZodType<T>,
+  ): Promise<T> => {
+    console.log(`${BASE_URL}${path}`);
+    return await this.handle(
+      {
+        path,
+        response: await fetch(`${BASE_URL}${path}`, {
+          method: 'POST',
+          body: new URLSearchParams(body),
+          headers: {
+            ...CHROMIUM_HEADERS,
+            ...this.external,
+            'Content-Type': `application/x-www-form-urlencoded;charset=UTF-8`,
+          },
+          proxy: this.proxy,
+        }),
       },
-      proxy: this.proxy,
-    });
-
-    return await this.handle(path, response, schema);
+      schema,
+    );
   };
 }
