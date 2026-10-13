@@ -45,4 +45,8 @@ export class Ficbook {
 
     return this.blogApi;
   }
+
+  set proxy(proxy: string) {
+    this.http.proxy = proxy;
+  }
 }
