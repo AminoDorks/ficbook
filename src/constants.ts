@@ -3,6 +3,8 @@ import type { Headers } from './types/http';
 export const SLUG_ID_REGEX =
   /class="visit-link"[^>]*href="\/readfic\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/gi;
 
+export const BLOG_ID_REGEX = /\/blog\/(\d+)/g;
+
 export const PERSONAL_INFO_REGEX = /name="token"\s+value="([^"]+)"/;
 
 export const BASE_URL = 'https://fanficlets.xyz';

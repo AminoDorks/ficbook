@@ -5,6 +5,7 @@ import { createLogger } from '../util/logger';
 import { AuthAPI } from '../api/auth';
 import { FanficAPI } from '../api/fanfic';
 import { UserAPI } from '../api/user';
+import { BlogAPI } from '../api/blog';
 import type { Config } from '../types/ficbook';
 
 export class Ficbook {
@@ -14,6 +15,7 @@ export class Ficbook {
   private authApi?: AuthAPI;
   private fanficApi?: FanficAPI;
   private userApi?: UserAPI;
+  private blogApi?: BlogAPI;
 
   constructor({ enableLogging }: Config) {
     this.logger = createLogger(!!enableLogging);
@@ -36,5 +38,11 @@ export class Ficbook {
     if (!this.userApi) this.userApi = new UserAPI(this.http);
 
     return this.userApi;
+  }
+
+  get blog() {
+    if (!this.blogApi) this.blogApi = new BlogAPI(this.http);
+
+    return this.blogApi;
   }
 }

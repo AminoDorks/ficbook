@@ -1,4 +1,9 @@
-import { LETTERS, PERSONAL_INFO_REGEX, SLUG_ID_REGEX } from '../constants';
+import {
+  BLOG_ID_REGEX,
+  LETTERS,
+  PERSONAL_INFO_REGEX,
+  SLUG_ID_REGEX,
+} from '../constants';
 
 export const generateBoundary = () =>
   Array.from(
@@ -20,3 +25,7 @@ export const matchToken = (html: string): string =>
 
 export const generateDate = (): string =>
   new Date().toISOString().replace('T', ' ').slice(0, 16);
+
+export const matchBlogIds = (html: string): string[] => [
+  ...new Set(html.matchAll(BLOG_ID_REGEX).map((match) => match[1]!)),
+];
