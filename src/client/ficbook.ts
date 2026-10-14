@@ -49,4 +49,7 @@ export class Ficbook {
   set proxy(proxy: string) {
     this.http.proxy = proxy;
   }
+
+  public healthcheck = async (): Promise<boolean> =>
+    await this.http.healthcheck();
 }

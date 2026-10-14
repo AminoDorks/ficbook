@@ -147,9 +147,8 @@ export class Http {
   public urlencoded = async <T>(
     { path, body }: MapBuilder,
     schema: ZodType<T>,
-  ): Promise<T> => {
-    console.log(`${BASE_URL}${path}`);
-    return await this.handle(
+  ): Promise<T> =>
+    await this.handle(
       {
         path,
         response: await fetch(`${BASE_URL}${path}`, {
@@ -165,5 +164,17 @@ export class Http {
       },
       schema,
     );
+
+  public healthcheck = async (): Promise<boolean> => {
+    try {
+      await fetch(BASE_URL, {
+        method: 'GET',
+        proxy: this._proxy,
+      });
+
+      return true;
+    } catch {
+      return false;
+    }
   };
 }
