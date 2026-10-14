@@ -17,7 +17,7 @@ export class Ficbook {
   private userApi?: UserAPI;
   private blogApi?: BlogAPI;
 
-  constructor({ enableLogging }: Config) {
+  constructor({ enableLogging }: Config = {}) {
     this.logger = createLogger(!!enableLogging);
     this.http = new Http(this.logger);
   }
