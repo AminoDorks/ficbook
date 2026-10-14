@@ -6,6 +6,7 @@ import type { ZodType } from 'zod';
 
 import { FicbookError } from '../util/errors';
 import { generateBoundary, mapToString } from '../util/helpers';
+import { generateTrace } from '../util/cryptography';
 import { BASE_URL, CHROMIUM_HEADERS, MOBILE_HEADERS } from '../constants';
 import type {
   GetBuilder,
@@ -112,6 +113,7 @@ export class Http {
           headers: {
             ...MOBILE_HEADERS,
             ...this.external,
+            ...generateTrace(),
           },
           proxy: this.proxy,
         }),
@@ -141,6 +143,7 @@ export class Http {
       headers: {
         ...CHROMIUM_HEADERS,
         ...this.external,
+        ...generateTrace(),
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
       },
       proxy: this.proxy,
@@ -162,6 +165,7 @@ export class Http {
           headers: {
             ...CHROMIUM_HEADERS,
             ...this.external,
+            ...generateTrace(),
             'Content-Type': `application/x-www-form-urlencoded;charset=UTF-8`,
           },
           proxy: this.proxy,
