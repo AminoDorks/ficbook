@@ -12,6 +12,8 @@ export class AuthAPI {
   public login = async (rme: string, phpSessionId: string) =>
     (this.http.cookie = { rme, phpSessionId });
 
+  public logout = async () => this.http.clear();
+
   public register = async (
     builder: RegisterBuilder,
   ): Promise<PartialCredentials> => {

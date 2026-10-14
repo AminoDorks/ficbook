@@ -75,6 +75,11 @@ export class Http {
     );
   };
 
+  public clear = () => {
+    this.cookies.clear();
+    this.external = {};
+  };
+
   public get = async <T>(
     { path, html }: GetBuilder,
     schema: ZodType<T>,
