@@ -113,7 +113,7 @@ export class Http {
           headers: {
             ...MOBILE_HEADERS,
             ...this.external,
-            ...generateTrace(),
+            ...generateTrace('POST', `/api_mobile${path}`),
           },
           proxy: this.proxy,
         }),
@@ -143,7 +143,6 @@ export class Http {
       headers: {
         ...CHROMIUM_HEADERS,
         ...this.external,
-        ...generateTrace(),
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
       },
       proxy: this.proxy,
@@ -165,7 +164,6 @@ export class Http {
           headers: {
             ...CHROMIUM_HEADERS,
             ...this.external,
-            ...generateTrace(),
             'Content-Type': `application/x-www-form-urlencoded;charset=UTF-8`,
           },
           proxy: this.proxy,
