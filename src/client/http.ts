@@ -174,7 +174,7 @@ export class Http {
 
   public healthcheck = async (): Promise<boolean> => {
     try {
-      await fetch(BASE_URL, {
+      await fetch('https://api.ipify.org?format=json', {
         method: 'GET',
         proxy: this._proxy,
       });
